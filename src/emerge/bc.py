@@ -193,6 +193,7 @@ class PortBC(RobinBC):
         self.Z0 = None
         self._tri_ids: np.ndarray = None
         self._tri_vertices: np.ndarray = None
+        self.active: bool = False
 
     def get_basis(self) -> np.ndarray:
         return self.cs._basis

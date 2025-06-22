@@ -22,10 +22,10 @@ from ...elements.nedelec2 import Nedelec2
 from ...elements.nedleg2 import NedelecLegrange2
 from ...mth.optimized import gaus_quad_tri
 from ...mth.tri import ned2_tri_stiff_force
-from scipy.sparse import lil_matrix, csr_matrix, eye
+from scipy.sparse import csr_matrix, eye
 from loguru import logger
 from typing import Callable
-import time
+from .simjob import SimJob
 from numba import types, njit, f8, i8, c16
 from collections import defaultdict
 
@@ -205,22 +205,6 @@ def tri_tem_stiffness_matrix(field: Nedelec2,
         
     return field.generate_csr(K)
 
-class EMFreqData:
-    def __init__(self,
-                 A: csr_matrix,
-                 b: np.ndarray,
-                 solve_ids: np.ndarray,
-                 port_vectors: dict[int, np.ndarray],
-                 Pmat: csr_matrix,
-                 has_periodic: bool):
-        self.A: csr_matrix = A
-        self.b: np.ndarray = b
-        self.solve_ids: np.ndarray = solve_ids
-        self.port_vectors: dict[int, np.ndarray] = port_vectors
-        self.Pmat: csr_matrix = Pmat
-        self.has_periodic: bool = has_periodic
-        self.Pmat_dag = self.Pmat.conjugate().transpose()
-
 class Assembler:
 
     def __init__(self):
@@ -333,7 +317,7 @@ class Assembler:
                         ur: np.ndarray, 
                         bcs: list[BoundaryCondition],
                         frequency: float,
-                        cache_matrices: bool = False) -> EMFreqData:
+                        cache_matrices: bool = False) -> SimJob:
         
         from .optimized_assembly import tet_mass_stiffness_matrices
 
@@ -378,7 +362,6 @@ class Assembler:
             for ii in tri_ids:
                 tids = field.tri_to_field[:, ii]
                 pec_ids.extend(list(tids))
-
 
         # Robin BCs
         logger.debug('Implementing Robin BCs')
@@ -482,4 +465,14 @@ class Assembler:
             solve_ids = np.argwhere(mask==1).flatten()
 
         logger.debug(f'Assembly complete! Total of {K.shape[0]} DOF')
-        return EMFreqData(K, b, solve_ids, port_vectors, Pmat, has_periodic)
+        simjob = SimJob(K, b, k0*299792458/(2*np.pi), True)
+        
+        simjob.port_vectors = port_vectors
+        simjob.solve_ids = solve_ids
+
+        if has_periodic:
+            simjob.P = Pmat
+            simjob.Pd = Pmat.conjugate().transpose()
+            simjob.has_periodic = has_periodic
+
+        return simjob

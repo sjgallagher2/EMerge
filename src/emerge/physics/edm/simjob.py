@@ -1,10 +1,5 @@
-from .emdata import EMDataSet
 import numpy as np
-from loguru import logger
-import shutil
-import tempfile
 import os
-from ...solver import ParallelRoutine
 from scipy.sparse import csr_matrix, save_npz, load_npz
 
 
@@ -15,8 +10,6 @@ class SimJob:
                  b: np.ndarray,
                  freq: float,
                  cache_factorization: bool,
-                 store_limit: int = 100_000,
-                 relative_path: str = 'EMerge_temp',
                  ):
 
         self.A: csr_matrix = A
@@ -32,19 +25,20 @@ class SimJob:
         self.port_vectors: dict = None
         self.solve_ids = None
 
-        self.ertri: np.ndarray = None
-        self.urtri: np.ndarray = None
-
-        self.routine = ParallelRoutine()
-
-        self.store_limit = store_limit
-        self.relative_path = relative_path
+        self.store_limit = None
+        self.relative_path = None
         self._store_location = {}
         self._stored: bool = False
+
+        self._active_port: int = None
 
         self.store_if_needed()
 
     def maybe_store(self, matrix, name):
+        
+        if self.store_limit is None:
+            return matrix
+        
         if matrix is not None and matrix.nnz > self.store_limit:
             # Create temp directory if needed
             os.makedirs(self.relative_path, exist_ok=True)
@@ -66,12 +60,13 @@ class SimJob:
             return load_npz(self._store_location[name])
         return getattr(self, name)
 
-    def solve(self):
-
+    def iter_Ab(self):
         reuse_factorization = False
 
         for key, mode in self.port_vectors.items():
             # Set port as active and add the port mode to the forcing vector
+            self._active_port = key
+
             b_active = self.b + mode
             A = self.load_if_needed('A')
             
@@ -82,20 +77,27 @@ class SimJob:
                 b_active = Pd @ b_active
                 A = Pd @ A @ P
 
-            # Solve the Ax=b problem
-            solution = self.routine.solve(A, b_active, self.solve_ids, reuse=reuse_factorization)
+            yield A, b_active, self.solve_ids, reuse_factorization
 
-            if self.has_periodic:
-                solution = self.P @ solution
-            # From now reuse the factorization
             reuse_factorization = True
-
-            self._fields[key] = solution
-
-        self.routine = None
+        
         self.cleanup()
     
+    def submit_solution(self, solution):
+        # Solve the Ax=b problem
+
+        if self.has_periodic:
+            solution = self.P @ solution
+        # From now reuse the factorization
+
+        self._fields[self._active_port] = solution
+
+        self.routine = None
+    
     def cleanup(self):
+        if not self._stored:
+            return
+        
         if not os.path.isdir(self.relative_path):
             return
 
