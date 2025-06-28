@@ -21,4 +21,5 @@ meshes/
 
 version_update.txt
 
-applications/
+# EMerge data files
+*.emerge

@@ -1,7 +1,7 @@
 import emerge as em
 import numpy as np
 from emerge.pyvista import PVDisplay
-import matplotlib.pyplot as plt
+from emerge.plot import plot_sp, smith, plot_ff_polar, plot_ff
 
 mm = 0.001
 margin = 5*mm
@@ -75,8 +75,6 @@ data = model.physics.frequency_domain(parallel=True, njobs=4)
 xs, ys, zs = em.YAX.pair(em.ZAX).span(wsub, Hair, 31, (0, -wsub/2, -th))
 
 freqs, S11 = data.ax('freq').S(1,1)
-
-from emerge.plot import plot_sp, smith, plot_ff_polar, plot_ff
 
 plot_sp(freqs/1e9, S11)
 smith(freqs, S11)

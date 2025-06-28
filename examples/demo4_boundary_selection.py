@@ -1,7 +1,6 @@
 import emerge as em
-from emerge.pyvista import PVDisplay
-import matplotlib.pyplot as plt
 import numpy as np
+from emerge.plot import plot_ff_polar, plot_sp
 
 """
 In this demonstration we are going to show how one can make selections using the 
@@ -120,8 +119,6 @@ data = model.physics.frequency_domain()
 
 # First the S11 plot
 f, S11 = data.ax('freq').S(1,1)
-
-from emerge.plot import plot_ff_polar, plot_sp
 
 plot_sp(f/1e9, S11, labels=['S11'])
 

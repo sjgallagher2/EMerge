@@ -1,6 +1,5 @@
 import emerge as em
 import numpy as np
-from emerge.pyvista import PVDisplay
 
 """ DEMO: COMBLINE FILTER
 
@@ -42,7 +41,8 @@ rin = 12.5*mil
 lfeed = 100*mil
 
 # A usual we start our simulation file
-model = em.Simulation3D('Combline_DEMO', PVDisplay)
+model = em.Simulation3D('Combline_DEMO')
+
 
 # The filter consists of quarter lamba cylindrical pins inside an airbox.
 # First we create the airbox
@@ -131,6 +131,6 @@ Ex, Ey, Ez = data.item(3).interpolate(X,Y,Z).E
 model.display.add_object(box, opacity=0.1, show_edges=True)
 model.display.add_quiver(X,Y,Z, Ex.real, Ey.real, Ez.real)
 model.display.add_object(feed1out, opacity=0.1)
-model.display.add_portmode(port1, port1.get_mode().k0, 21)
-model.display.add_portmode(port2, port2.get_mode().k0, 21)
+model.display.add_portmode(port1, 21)
+model.display.add_portmode(port2, 21)
 model.display.show()

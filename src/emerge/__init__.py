@@ -25,6 +25,7 @@ os.environ["OPENBLAS_NUM_THREADS"] = NTHREADS
 os.environ["VECLIB_MAXIMUM_THREADS"] = NTHREADS
 os.environ["NUMEXPR_NUM_THREADS"] = NTHREADS
 
+
 from loguru import logger
 from _emerge.logsettings import logger_format
 import sys
@@ -38,11 +39,11 @@ from _emerge.simmodel import Simulation3D
 from _emerge.material import Material
 from _emerge import bc
 from _emerge.solver import superlu_info, SolverBicgstab, SolverGMRES, SolveRoutine, ReverseCuthillMckee, Sorter, SolverPardiso, SolverUMFPACK
-from _emerge.cs import CoordinateSystem, Plane, Axis, XAX, YAX, ZAX, XYPLANE, XZPLANE, YZPLANE, YXPLANE, ZXPLANE, ZYPLANE, GCS
+from _emerge.cs import CoordinateSystem, CS, GCS, Plane, Axis, XAX, YAX, ZAX, XYPLANE, XZPLANE, YZPLANE, YXPLANE, ZXPLANE, ZYPLANE
 from _emerge.coord import Line
 from _emerge import geo
 from _emerge.selection import Selection, FaceSelection, DomainSelection, EdgeSelection
-from _emerge.mth.common_functions import norm
+from _emerge.mth.common_functions import norm, coax_rout, coax_rin
 from _emerge.physics.edm.sc import stratton_chu
 from . import lib
 logger.debug('Importing complete!')

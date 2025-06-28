@@ -1,5 +1,6 @@
 import emerge as em
 import numpy as np
+from emerge.plot import smith, plot_sp
 """ STEPPED IMPEDANCE FILTER
 
 In this demo we will look at how we can construct a stepped impedance filter using the
@@ -100,19 +101,14 @@ m.physics.modal_analysis(port1, 1, True, TEM=True)
 m.physics.modal_analysis(port2, 1, True, TEM=True)
 
 # Finally we import the display class to view the resultant modes
-from _emerge.plot.pyvista import PVDisplay
-
-d = PVDisplay(m.mesh)
-d.add_object(pcb)
-d.add_object(polies)
-d.add_portmode(port1, port1.modes[0].k0, 21)
-d.add_portmode(port2, port2.modes[0].k0, 21)
-d.show()
+m.display.add_object(pcb)
+m.display.add_object(polies)
+m.display.add_portmode(port1, 21)
+m.display.add_portmode(port2, 21)
+m.display.show()
 
 # Finally we execute the frequency domain sweep and compute the Scattering Parameters.
-sol = m.physics.frequency_domain(parallel=True, njobs=4, frequency_groups=8)
-
-from emerge.plot import smith, plot_sp
+sol = m.physics.frequency_domain(parallel=True, njobs=2)
 
 f, S11 = sol.ax('freq').S(1,1)
 f, S21 = sol.ax('freq').S(2,1)

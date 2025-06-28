@@ -205,7 +205,7 @@ class Electrodynamics3D:
             condutivity (float): The conductivity level in S/m
         """
         if condutivity < 0:
-            logger.warning('Conductivity values must be above 0. Ignoring assignment')
+            raise ValueError('Conductivity values must be above 0. Ignoring assignment')
 
         self.assembler.conductivity_limit = condutivity
     def get_discretizer(self) -> Callable:
@@ -360,7 +360,7 @@ class Electrodynamics3D:
                 logger.debug('High Ez/Et ratio detected, assuming TM mode')
                 mode.modetype = 'TM'
             elif TEM:
-                G1, G2 = self._find_tem_conductors(port)
+                G1, G2 = self._find_tem_conductors(port, sigtri=cond)
                 cs, dls = self._compute_integration_line(G1,G2)
                 
                 Ex, Ey, Ez = portfE(cs[0,:], cs[1,:], cs[2,:])
@@ -421,7 +421,7 @@ class Electrodynamics3D:
         dls = path[:,1:] - path[:,:-1]
         return centres, dls
 
-    def _find_tem_conductors(self, port: ModalPort) -> tuple[list[int], list[int]]:
+    def _find_tem_conductors(self, port: ModalPort, sigtri: np.ndarray) -> tuple[list[int], list[int]]:
         ''' Returns two lists of global node indices corresponding to the TEM port conductors.
         
         This method is invoked during modal analysis with TEM modes. It looks at all edges
@@ -448,6 +448,12 @@ class Electrodynamics3D:
             edge_ids = list(mesh.tri_to_edge[:,tri_ids].flatten())
             pec_edges.extend(edge_ids)
         
+        # Process conductivity
+        for itri in mesh.get_triangles(port.tags):
+            if sigtri[itri] > 1e6:
+                edge_ids = list(mesh.tri_to_edge[:,itri].flatten())
+                pec_edges.extend(edge_ids)
+
         pec_edges = set(pec_edges)
         
         tri_ids = mesh.get_triangles(port.tags)
@@ -823,6 +829,9 @@ class Electrodynamics3D:
             f_points = 0.5*((f_max-f_min)*xk + (f_max+f_min))
             self.frequencies = np.geomspace(f_min, f_max, Npts)
         if parallel:
+            if njobs == 1:
+                logger.warning('Only one parallel thread indicated, defaulting to single threaded.')
+                return self.frequency_domain_single()
             return self.frequency_domain_par(njobs, harddisc_threshold, harddisc_path, frequency_groups)
         else:
             return self.frequency_domain_single()
@@ -897,7 +906,7 @@ class Electrodynamics3D:
             for existing_bc in self.boundary_conditions:
                 excluded = existing_bc.exclude_bc(bc)
                 if excluded:
-                    logger.warning(f'Removed the following {wordmap[bc.dim]}: {excluded} from {existing_bc}')
+                    logger.debug(f'Removed the following {wordmap[bc.dim]}: {excluded} from {existing_bc}')
             
             self.boundary_conditions.append(bc)
 
