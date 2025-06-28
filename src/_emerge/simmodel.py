@@ -24,6 +24,7 @@ from .selection import Selector, FaceSelection, Selection
 from .logsettings import logger_format
 from .geo.modeler import Modeler
 from .plot.display import BaseDisplay
+from .plot.pyvista import PVDisplay
 
 from typing import Literal, Type
 from loguru import logger
@@ -67,7 +68,7 @@ class Simulation3D:
         self.mesh: Mesh3D = Mesh3D(self.mesher)
         self.select: Selector = Selector()
         self.modeler: Modeler = Modeler()
-        self.display: BaseDisplay = None
+        self.display: PVDisplay = None
         self._geometries: list[GeoObject] = []
         self.set_loglevel(loglevel)
 
@@ -76,6 +77,8 @@ class Simulation3D:
 
         if display is not None:
             self.display = display(self.mesh)
+        else:
+            self.display = PVDisplay(self.mesh)
 
         self.save_file: bool = save_file
         self.load_file: bool = load_file
@@ -131,15 +134,20 @@ class Simulation3D:
     def set_loglevel(self, loglevel: Literal['DEBUG','INFO','WARNING','ERROR']) -> None:
         handler = {"sink": sys.stdout, "level": loglevel, "format": logger_format}
         logger.configure(handlers=[handler])
-        #logger.remove()
-        #logger.add(sys.stderr, format=logger_format)
-    
-    def view(self, selections: list[Selection] = None, use_gmsh: bool = False) -> None:
-        """Preview the geometry as currently defined using the GMSH viewer.
-        
-        This function simply calls: 
-        >>> gmsh.model.occ.synchronize()
-        >>> gmsh.fltk.run()
+
+    def view(self, 
+             selections: list[Selection] = None, 
+             use_gmsh: bool = False,
+             opacity: float = None,
+             show_edges: bool = None) -> None:
+        """View the current geometry in either the BaseDisplay object (PVDisplay only) or
+        the GMSH viewer.
+
+        Args:
+            selections (list[Selection], optional): Additional selections to highlight. Defaults to None.
+            use_gmsh (bool, optional): Whether to use the GMSH display. Defaults to False.
+            opacity (float, optional): The global opacity of all objects.. Defaults to None.
+            show_edges (bool, optional): Whether to show the geometry edges. Defaults to None.
         """
         if not (self.display is not None and self.mesh.defined) or use_gmsh:
             gmsh.model.occ.synchronize()
@@ -147,7 +155,7 @@ class Simulation3D:
             return
         try:
             for obj in self._geometries:
-                self.display.add_object(obj)
+                self.display.add_object(obj, show_edges=show_edges, opacity=opacity)
             if selections:
                 [self.display.add_object(sel, color='red', opacity=0.7) for sel in selections]
             self.display.show()
@@ -189,9 +197,6 @@ class Simulation3D:
 
         gmsh.model.occ.synchronize()
         self.mesher.set_mesh_size(self.physics.get_discretizer(), self.physics.resolution)
-
-        print('DIM2:', gmsh.model.get_entities(2))
-        print('DIM3:', gmsh.model.get_entities(3))
 
         gmsh.model.mesh.generate(3)
         self.mesh.update()

@@ -147,11 +147,15 @@ class EMDataSet(DataSet):
     
     @property
     def normE(self) -> np.ndarray:
+        """The complex norm of the E-field
+        """
         return np.sqrt(np.abs(self.Ex)**2 + np.abs(self.Ey)**2 + np.abs(self.Ez)**2)
     
     @property
     def normH(self) -> np.ndarray:
+        """The complex norm of the H-field"""
         return np.sqrt(np.abs(self.Hx)**2 + np.abs(self.Hy)**2 + np.abs(self.Hz)**2)
+    
     @property
     def Emat(self) -> np.ndarray:
         return np.array([self.Ex, self.Ey, self.Ez])
@@ -250,15 +254,35 @@ class EMDataSet(DataSet):
         ''' Returns the S-parameter S(i1,i2)'''
         return self.Sp(i1, i2)
 
-    def vector(self, field: Literal['E','H']) -> tuple[np.ndarray, np.ndarray,np.ndarray,np.ndarray,np.ndarray,np.ndarray]:
-        
-        if field=='E':
-            return self._x, self._y, self._z, self.Ex.real, self.Ey.real, self.Ez.real
-        if field=='H':
-            return self._x, self._y, self._z, self.Hx.real, self.Hy.real, self.Hz.real
+    def vector(self, field: Literal['E','H'], metric: Literal['real','imag','complex'] = 'real') -> tuple[np.ndarray, np.ndarray,np.ndarray,np.ndarray,np.ndarray,np.ndarray]:
+        """Returns the X,Y,Z,Fx,Fy,Fz data to be directly cast into plot functions.
 
-    def scalar(self, field: Literal['Ex','Ey','Ez','Hx','Hy','Hz','normE','normH'], metric: Literal['abs','real','imag'] = 'real') -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        The field can be selected by a string literal. The metric of the complex vector field by the metric.
+        For animations, make sure to always use the complex metric.
+
+        Args:
+            field ('E','H'): The field to return
+            metric ([]'real','imag','complex'], optional): the metric to impose on the field. Defaults to 'real'.
+
+        Returns:
+            tuple[np.ndarray,...]: The X,Y,Z,Fx,Fy,Fz arrays
+        """
+        if field=='E':
+            Fx, Fy, Fz = self.Ex, self.Ey, self.Ez
+        elif field=='H':
+            Fx, Fy, Fz = self.Hx, self.Hy, self.Hz
+        
+        if metric=='real':
+            Fx, Fy, Fz = Fx.real, Fy.real, Fz.real
+        elif metric=='imag':
+            Fx, Fy, Fz = Fx.imag, Fy.imag, Fz.imag
+        
+        return self._x, self._y, self._z, Fx, Fy, Fz
+    
+    def scalar(self, field: Literal['Ex','Ey','Ez','Hx','Hy','Hz','normE','normH'], metric: Literal['abs','real','imag','complex'] = 'real') -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Returns the data X, Y, Z, Field based on the interpolation
+
+        For animations, make sure to select the complex metric.
 
         Args:
             field (str): The field to plot
@@ -274,6 +298,8 @@ class EMDataSet(DataSet):
             field = field.real
         elif metric=='imag':
             field = field.imag
+        elif metric=='complex':
+            field = field
         return self._x, self._y, self._z, field
     
 class _DataSetProxy:
