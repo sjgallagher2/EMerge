@@ -49,13 +49,19 @@ conda install -y python=3.10
 ## Step 3: Install required packages
 
 ```bash
-conda install suitesparse
+conda install anaconda::suitesparse
 conda install meson swig
 conda install -c conda-forge compilers
 conda install -c conda-forge m2w64-toolchain
 conda install -c conda-forge openblas
+python -m pip install meson-python
 ```
-
+**Extra**
+If you deinstalled numpy and scipy, install them first:
+```bash
+python -m pip install numpy
+python -m pip install scipy
+```
 ---
 
 ## Step 4: Create a `nativefile.ini` file
@@ -100,8 +106,6 @@ python -m pip install scikit-umfpack --no-build-isolation -Csetup-args="--native
 ## Step 6 (optional): Reinstall the packages you uninstalled earlier
 
 ```bash
-python -m pip install numpy
-python -m pip install scipy
 python -m pip install numba
 python -m pip install numba-progress
 
