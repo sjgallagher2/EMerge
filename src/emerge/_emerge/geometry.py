@@ -422,6 +422,8 @@ class GeoObject:
         """
         if tags is None:
             tags = []
+        for name in exclude:
+            tags.extend(self.face(name).tags)
         dimtags = gmsh.model.get_boundary(self.dimtags, True, False)
         return FaceSelection([t for d,t in dimtags if t not in tags])
     

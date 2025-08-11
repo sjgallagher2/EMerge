@@ -313,7 +313,7 @@ class Simulation3D:
         for geo in _GEOMANAGER.all_geometries():
             self.display.add_object(geo)
         if selections:
-            [self.display.add_object(sel, color='red', opacity=0.7) for sel in selections]
+            [self.display.add_object(sel, color='red', opacity=0.3) for sel in selections]
         self.display.show()
 
         return None

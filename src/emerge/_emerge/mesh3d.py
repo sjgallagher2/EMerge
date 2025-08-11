@@ -460,6 +460,9 @@ class Mesh3D(Mesh):
         edge_dimtags = gmsh.model.get_entities(1)
         for _d, t in edge_dimtags:
             _, edge_tags, node_tags = gmsh.model.mesh.get_elements(1, t)
+            if not edge_tags:
+                self.etag_to_edge[t] = []
+                continue
             self.etag_to_edge[t] = [int(self.edge_t2i[tag]) for tag in edge_tags[0]]
         
         
