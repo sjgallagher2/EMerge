@@ -37,7 +37,7 @@ wgb = 10.16*mm
 L = 50*mm
 
 model = em.Simulation('Test Mode')
-model.check_version("0.6.5") # Checks version compatibility.
+model.check_version("0.6.6") # Checks version compatibility.
 
 # first lets define a WR90 waveguide
 wg_box = em.geo.Box(L, wga, wgb, position=(-L, -wga/2, -wgb/2))
@@ -71,7 +71,7 @@ feed_port = wg_box_new.face('left', tool=wg_box)
 
 # We can also select the outside and exclude a given face. Because our airbox
 # is not modified, we don't have to work with tools.
-radiation_boundary = airbox.outside('left')
+radiation_boundary = airbox.boundary(exclude=('left',))
 
 # Lets view our result
 model.view(selections=[feed_port, radiation_boundary])

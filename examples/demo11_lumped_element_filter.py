@@ -29,7 +29,7 @@ def Cf(C):
 pack = '0603'         # package footprint for lumped components
 # Create simulation and PCB layouter with substrate thickness and material
 m = em.Simulation('LumpedFilter')
-m.check_version("0.6.5") # Checks version compatibility.
+m.check_version("0.6.6") # Checks version compatibility.
 
 th = 0.5         # substrate thickness (meters)
 Hair = 2.0
@@ -99,7 +99,7 @@ for le in LEs:
     m.mw.bc.LumpedElement(le)
 # Perfect conductor on copper traces and vias
 m.mw.bc.PEC(traces)
-m.mw.bc.PEC(vias.outside())
+m.mw.bc.PEC(vias.boundary())
 
 # --- Run frequency-domain simulation ------------------------------------
 data = m.mw.run_sweep(parallel=True, njobs=4, frequency_groups=8)

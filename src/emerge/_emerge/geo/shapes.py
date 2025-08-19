@@ -32,7 +32,19 @@ class Alignment(Enum):
 
 
 class Box(GeoVolume):
-    """3D box geometry."""
+    """Creates a box volume object.
+        Specify the alignment of the box with the provided position. The options are CORNER (default)
+        for the front-left-bottom node of the box or CENTER for the center of the box.
+
+        Args:
+            width (float): The x-size
+            depth (float): The y-size
+            height (float): The z-size
+            position (tuple, optional): The position of the box. Defaults to (0,0,0).
+            alignment (Alignment, optional): Which point of the box is placed at the position. 
+                Defaults to Alignment.CORNER.
+        """
+
     def __init__(self, 
                  width: float, 
                  depth: float, 
@@ -92,7 +104,12 @@ class Box(GeoVolume):
     
     
 class Sphere(GeoVolume):
-    """3D sphere geometry."""
+    """Generates a sphere objected centered ont he position with the given radius
+
+    Args:
+        radius (float): The sphere radius
+        position (tuple, optional): The center position. Defaults to (0,0,0).
+    """
     def __init__(self, 
                  radius: float,
                  position: tuple = (0,0,0)):
@@ -108,7 +125,17 @@ class Sphere(GeoVolume):
 
 
 class XYPlate(GeoSurface):
-    """2D plate in the XY-plane."""
+    """Generates and XY-plane oriented plate
+        
+        Specify the alignment of the plate with the provided position. The options are CORNER (default)
+        for the front-left node of the plate or CENTER for the center of the plate.
+
+        Args:
+            width (float): The x-size of the plate
+            depth (float): The y-size of the plate
+            position (tuple, optional): The position of the alignment node. Defaults to (0,0,0).
+            alignment (Alignment, optional): Which node to align to. Defaults to Alignment.CORNER.
+        """
     def __init__(self, 
                  width: float, 
                  depth: float, 
@@ -134,7 +161,19 @@ class XYPlate(GeoSurface):
 
 
 class Plate(GeoSurface):
-    """A generalized 2D rectangular plate in XYZ-space."""
+    """A generalized 2D rectangular plate in XYZ-space.
+
+        The plate is specified by an origin (o) in meters coordinate plus two vectors (u,v) in meters
+        that span two of the sides such that all points of the plate are defined by:
+            p1 = o
+            p2 = o+u
+            p3 = o+v
+            p4 = o+u+v
+        Args:
+            origin (tuple[float, float, float]): The origin of the plate in meters
+            u (tuple[float, float, float]): The u-axis of the plate
+            v (tuple[float, float, float]): The v-axis of the plate
+        """
     def __init__(self,
                 origin: tuple[float, float, float],
                 u: tuple[float, float, float],
@@ -296,7 +335,6 @@ class CoaxCylinder(GeoVolume):
 
         xo, yo, zo = self.cs.in_global_cs(x.flatten(), y.flatten(), z.flatten())
         return xo, yo, zo
-    
     
 class HalfSphere(GeoVolume):
     """A half sphere volume."""

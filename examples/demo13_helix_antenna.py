@@ -25,7 +25,7 @@ porth = 2*mm                    # vertical height of the feed extrusion
 
 # --- Simulation object -------------------------------------------------------
 model = em.Simulation('helix')
-model.check_version("0.6.5") # Checks version compatibility.
+model.check_version("0.6.6") # Checks version compatibility.
 
 dfeed = 3*mm                    # straight feed length before the helix starts
 
@@ -78,8 +78,8 @@ model.generate_mesh()
 model.view()
 
 # --- Boundary selections for BCs & port -------------------------------------
-abc_sel = airbox.outside('bottom')     # absorbing boundary applied at bottom face of airbox
-port_sel = feed.outside('front','back')# port faces on the feed (two opposite faces)
+abc_sel = airbox.boundary(exclude=('bottom',))     # absorbing boundary applied at bottom face of airbox
+port_sel = feed.boundary(exclude=('front','back'))# port faces on the feed (two opposite faces)
 
 # --- Boundary conditions -----------------------------------------------------
 abc = model.mw.bc.AbsorbingBoundary(abc_sel)                     # open-space termination

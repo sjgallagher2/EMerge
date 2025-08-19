@@ -29,7 +29,7 @@ dx = 2 * mm              # distance from horn exit to PML start
 
 # Create simulation object
 m = em.Simulation('HornAntenna')
-m.check_version("0.6.5") # Checks version compatibility.
+m.check_version("0.6.6") # Checks version compatibility.
 # --- Coordinate system for horn geometry -------------------------------
 hornCS = em.CS(em.YAX, em.ZAX, em.XAX)
 
@@ -81,7 +81,7 @@ m.generate_mesh()
 # --- Boundary conditions ------------------------------------------------
 p1 = m.mw.bc.ModalPort(feed.face('left'), 1)     # excite TE10 in feed
 PMC = m.mw.bc.PMC(m.select.face.inplane(0, 0, 0, 0, 1, 0))  # perfect magnetic on symmetry
-radiation_boundary = air.outside('front', 'left', 'bottom')  # open faces
+radiation_boundary = air2.faces('back','top','right', tool=air)  # open faces
 abc = m.mw.bc.AbsorbingBoundary(m.select.face.inplane(Lhorn-dx,0,0,1,0,0))
 # View mesh and BC selections
 m.view(selections=[p1.selection, PMC.selection, radiation_boundary])
