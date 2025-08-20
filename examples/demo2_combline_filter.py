@@ -49,14 +49,14 @@ model.check_version("0.6.6") # Checks version compatibility.
 # First we create the airbox
 box = em.geo.Box(Lbox, a, b, position=(0,-a/2,0))
 
-# Next we create 5 cyllinders using the Modeler class.
+# Next we create 5 cylinders using the Modeler class.
 # The modeler class also implements a method chaining interface. In this example we stick to simpler features.
 # The modeler class allows us to create a parameter series using the modeler.series() method. We provid it with quantities.
 # We can do this for multiple at the same time (as you can also see with the position). The modeler class
-# will recognize the multiple quantities and simply create 5 different cyllinders, one for each parameter pair.
-stubs = model.modeler.cyllinder(W/2, model.modeler.series(C1, lr1, lr2, lr1, C1), position=(model.modeler.series(x1, x2, x3, x4, x5), 0, 0), NPoly=10)
+# will recognize the multiple quantities and simply create 5 different cylinders, one for each parameter pair.
+stubs = model.modeler.cylinder(W/2, model.modeler.series(C1, lr1, lr2, lr1, C1), position=(model.modeler.series(x1, x2, x3, x4, x5), 0, 0), NPoly=10)
 
-# Next we create the in and output feed cyllinders for the coaxial cable. We will use the Nsections feature in order to guarantee a better
+# Next we create the in and output feed cylinders for the coaxial cable. We will use the Nsections feature in order to guarantee a better
 # adherence to the boundary.
 feed1out = em.geo.Cylinder(rout, lfeed, em.CoordinateSystem(em.ZAX, em.YAX, em.XAX, np.array([-lfeed, 0, h])), Nsections=12)
 feed1in = em.geo.Cylinder(rin, lfeed+wi+W/2, em.CoordinateSystem(em.ZAX, em.YAX, em.XAX, np.array([-lfeed, 0, h])), Nsections=8)
