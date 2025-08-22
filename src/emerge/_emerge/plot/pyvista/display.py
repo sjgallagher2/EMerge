@@ -584,7 +584,7 @@ class PVDisplay(BaseDisplay):
         grid[name] = static_field
 
         grid_no_nan = grid.ptc().threshold(scalars=name)
-
+        print("I am on MAIN")
         # Determine color limits
         if clim is None:
             fmin = np.nanmin(static_field)
