@@ -599,20 +599,16 @@ class PVDisplay(BaseDisplay):
 
         if self._do_animate:
             def on_update(obj: _AnimObject, phi: complex):
-<<<<<<< HEAD
+
                 field_anim = obj.T(np.real(obj.field * phi))
                 obj.grid[name] = field_anim
-            self._objs.append(_AnimObject(field_flat, T, grid_no_nan, actor, on_update))
-           
-    
-
-=======
+                self._objs.append(_AnimObject(field_flat, T, grid_no_nan, actor, on_update))
                 field = obj.T(np.real(obj.field*phi))
                 obj.grid[name] = field
-            self._objs.append(_AnimObject(field_flat, T, grid, actor, on_update)) # type: ignore
+                self._objs.append(_AnimObject(field_flat, T, grid, actor, on_update)) # type: ignore
         
         
->>>>>>> 2102ddd7e893f995c7945c000bedc2607dc088ea
+
     def add_title(self, title: str) -> None:
         """Adds a title
 
