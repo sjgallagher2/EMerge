@@ -143,7 +143,7 @@ class Simulation:
         """This method no longer does something. It only serves as backwards compatibility."""
         self._exit_gmsh()
         return False
-    
+
     def _install_signal_handlers(self):
         # on SIGINT (Ctrl-C) or SIGTERM, call our exit routine
         for sig in (signal.SIGINT, signal.SIGTERM):
@@ -477,6 +477,11 @@ class Simulation:
             filename (str): The filename
         """
         gmsh.write(filename)
+
+    def finalize(self):
+        self._exit_gmsh()
+        _GEOMANAGER.reset(self.modelname)
+
     ############################################################
     #                     DEPRICATED FUNCTIONS                #
     ############################################################
