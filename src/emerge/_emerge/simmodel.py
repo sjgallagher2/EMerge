@@ -478,7 +478,13 @@ class Simulation:
         """
         gmsh.write(filename)
 
-    def finalize(self):
+    def finalize(self) -> None:
+        """Clean global GMSH state and reset the Geometry Manager.
+
+        Run this method after all other operations are complete if you want to
+        interactively rerun the script in the same console or notebook. All geometry
+        data will be cleared and GMSH will be finalized.
+        """
         self._exit_gmsh()
         _GEOMANAGER.reset(self.modelname)
 
