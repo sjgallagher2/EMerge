@@ -753,6 +753,7 @@ class MWField:
         xs = np.linspace(xb[0], xb[1], int((xb[1]-xb[0])/ds))
         ys = np.linspace(yb[0], yb[1], int((yb[1]-yb[0])/ds))
         zs = np.linspace(zb[0], zb[1], int((zb[1]-zb[0])/ds))
+        
         if x is not None:
             Y,Z = np.meshgrid(ys, zs)
             X = x*np.ones_like(Y)
@@ -763,6 +764,7 @@ class MWField:
             X,Y = np.meshgrid(xs, ys)
             Z = z*np.ones_like(Y)
         return self.interpolate(X,Y,Z)
+    
     def cutplane_normal(self,
              point=(0,0,0),
              normal=(0,0,1),

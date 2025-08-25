@@ -81,7 +81,7 @@ Ks = []
 hphis = []
 with em.Simulation('IrisSim') as sim:
     sim.check_version("0.6.7") # Checks version compatibility.
-    for (wgap,) in sim.parameter_sweep(True, wgap=wgaps):
+    for wgap in sim.parameter_sweep(True, wgap=wgaps):
         # Define two short waveguide sections separated by iris plate
         wg1 = em.geo.Box(wga, Lfeed, wgb, (-wga/2, -Lfeed - t_thickness/2, 0))
         iris = em.geo.Box(wgap, t_thickness, wgb, (-wgap/2, -t_thickness/2, 0))
