@@ -315,7 +315,6 @@ class PVDisplay(BaseDisplay):
         """The private callback function that stops the animation.
         """
         self._stop = True
-        print('CLOSE!')
 
     def _animate(self) -> None:
         """Private function that starts the animation loop.
@@ -583,8 +582,13 @@ class PVDisplay(BaseDisplay):
         self._ctr += 1
         grid[name] = static_field
 
+<<<<<<< HEAD
         grid_no_nan = grid.ptc().threshold(scalars=name)
         print("I am on MAIN")
+=======
+        grid_no_nan = grid.threshold(scalars=name)
+
+>>>>>>> c9a89a0775ccdf0dc49b6cc8525b671901b1f41d
         # Determine color limits
         if clim is None:
             fmin = np.nanmin(static_field)
@@ -656,6 +660,11 @@ class PVDisplay(BaseDisplay):
         dx = dx.flatten().real
         dy = dy.flatten().real
         dz = dz.flatten().real
+        
+        ids = np.invert(np.isnan(dx))
+        
+        x, y, z, dx, dy, dz = x[ids], y[ids], z[ids], dx[ids], dy[ids], dz[ids]
+        
         dmin = _min_distance(x,y,z)
 
         dmax = np.max(_norm(dx,dy,dz))
@@ -671,8 +680,10 @@ class PVDisplay(BaseDisplay):
         kwargs = dict()
         if color is not None:
             kwargs['color'] = color
+            
         pl = self._plot.add_arrows(Coo, Vec, scalars=None, clim=None, cmap=None, **kwargs)
 
+        
     def add_contour(self,
                      X: np.ndarray,
                      Y: np.ndarray,
