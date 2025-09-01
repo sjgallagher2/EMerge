@@ -29,7 +29,7 @@ airbox_width = 15*cm                # airbox width
 
 # --- Create simulation object -------------------------------------------
 model = em.Simulation('ConicalHornAntenna', loglevel='DEBUG')
-model.check_version("0.6.11") # Checks version compatibility
+model.check_version("1.0.0") # Checks version compatibility
 
 # --- Feed geometry -------------------------------------------------------
 feed = em.geo.Cylinder(
