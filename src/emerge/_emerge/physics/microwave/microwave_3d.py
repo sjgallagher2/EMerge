@@ -263,6 +263,12 @@ class Microwave3D:
             resolution (float): The desired wavelength fraction.
             
         """
+        if resolution > 0.5:
+            logger.warning('Resolutions greater than 0.5 cannot yield accurate results, capping resolution to 0.4')
+            resolution = 0.4
+        elif resolution > 0.334:
+            logger.warning('A resolution greater than 0.33 may cause accuracy issues.')
+        
         self.resolution = resolution
 
     def set_conductivity_limit(self, condutivity: float) -> None:

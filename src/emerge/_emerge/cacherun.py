@@ -61,12 +61,18 @@ def entry_script_path():
 
 
 def get_build_section() -> str:
+    """ Returns the string section inside the check_build() if statement"""
     name = entry_script_path()
 
     lines = get_build_block_str(Path(name).read_text())
     return lines
 
 def get_run_section() -> str:
+    """Return sthe string section before the check_run() if statement
+
+    Returns:
+        str: _description_
+    """
     name = entry_script_path()
 
     lines = get_run_block_str(Path(name).read_text())

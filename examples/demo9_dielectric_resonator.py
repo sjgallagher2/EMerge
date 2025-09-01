@@ -85,12 +85,12 @@ for mode_index in range(Nmodes):
     Evec = field.vector('E', 'real')
     Hvec = field.vector('H', 'real')
     model.display.add_quiver(*Evec, color='red')
-    model.display.add_quiver(*Hvec, color='blue')
+    model.display.add_quiver(*Hvec, color='green')
     # Annotate resonant frequency and field labels
     freq_ghz = data.field[mode_index].freq.real / 1e9
     model.display.add_title(f'Mode {mode_index+1}: {freq_ghz:.3f} GHz')
     model.display.add_text('E-field', color='red', abs_position=(0, 0.95))
-    model.display.add_text('H-field', color='blue', abs_position=(0, 0.9))
-    model.display.add_surf(*data.field[mode_index].cutplane(2*mm, y=0).scalar('normS','real'))
+    model.display.add_text('H-field', color='green', abs_position=(0, 0.9))
+    model.display.add_surf(*data.field[mode_index].cutplane(2*mm, y=0).scalar('normS','real'), cmap='plasma')
     # Render each mode one at a time
     model.display.show()

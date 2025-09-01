@@ -545,7 +545,7 @@ class ModalPort(PortBC):
                 self.modes[k0] = new_modes
             return
         for k0, modes in self.modes.items():
-            self.modes[k0] = sorted(modes, key=lambda m: m.energy, reverse=True)
+            self.modes[k0] = sorted(modes, key=lambda m: m.beta, reverse=True)
 
     def get_mode(self, k0: float, i=None) -> PortMode:
         """Returns a given mode solution in the form of a PortMode object.
