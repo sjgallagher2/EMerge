@@ -22,6 +22,7 @@ from ...selection import FaceSelection, DomainSelection, EdgeSelection, Selectio
 from ...physics.microwave.microwave_bc import PortBC, ModalPort
 import numpy as np
 import pyvista as pv
+import pyvistaqt
 from typing import Iterable, Literal, Callable, Any
 from ..display import BaseDisplay
 from .display_settings import PVDisplaySettings
@@ -223,6 +224,7 @@ class _AnimObject:
 
     def update(self, phi: complex):
         self.on_update(self, phi)
+
 
 class PVDisplay(BaseDisplay):
 
@@ -962,7 +964,38 @@ class PVDisplay(BaseDisplay):
         self._plot.camera.view_angle = saved_camera["view_angle"]
         self._plot.camera.clipping_range = saved_camera["clipping_range"]
 
-        
+
+class PVBackgroundDisplay(PVDisplay):
+    def __init__(self, mesh: Mesh3D, plotter: pyvistaqt.BackgroundPlotter):
+        self._mesh: Mesh3D = mesh
+        self.set: PVDisplaySettings = PVDisplaySettings()
+
+        # Animation options
+        self._facetags: list[int] = []
+        self._stop: bool = False
+        self._objs: list[_AnimObject] = []
+        self._do_animate: bool = False
+        self._closed_via_x: bool = False
+        self._Nsteps: int = 0
+        self._fps: int = 25
+        self._ruler: ScreenRuler = ScreenRuler(self, 0.001)
+        self._selector: ScreenSelector = ScreenSelector(self)
+        self._stop = False
+        self._objs = []
+
+        self._plot = plotter
+
+        self._plot.add_key_event("m", self.activate_ruler)  # type: ignore
+        self._plot.add_key_event("f", self.activate_object)  # type: ignore
+
+        self._ctr: int = 0
+
+        self.camera_position = (1, -1, 1)  # +X, +Z, -Y
+
+    def show(self):
+        """ Shows the Pyvista display. """
+        pass
+
 
 def freeze(function):
 
@@ -1044,7 +1077,7 @@ class ScreenSelector:
                 continue
             actor.pickable = True
 
-        
+
 class ScreenRuler:
 
     def __init__(self, display: PVDisplay, min_length: float):

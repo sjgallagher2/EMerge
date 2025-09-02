@@ -15,6 +15,7 @@ dependencies = [
     "numba>=0.57.0",
     "numpy>=1.24, <2.3",
     "pyvista>=0.45.2",
+    "pyvistaqt>=0.11.3",
     "scipy>=1.14.0",
     "mkl!=2024.0; platform_machine == \"x86_64\" or platform_machine == \"AMD64\"",
     "cloudpickle>=3.1.1",

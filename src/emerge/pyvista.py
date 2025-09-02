@@ -1,1 +1,1 @@
-from _emerge.plot.pyvista import PVDisplay
+from _emerge.plot.pyvista import PVDisplay,PVBackgroundDisplay

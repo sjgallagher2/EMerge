@@ -16,6 +16,9 @@
 # <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
+
+import pyvistaqt
+
 from .mesher import Mesher, unpack_lists
 from .geometry import GeoObject, _GEOMANAGER
 from .geo.modeler import Modeler
@@ -23,7 +26,7 @@ from .physics.microwave.microwave_3d import Microwave3D
 from .mesh3d import Mesh3D
 from .selection import Selector, FaceSelection, Selection
 from .logsettings import LOG_CONTROLLER
-from .plot.pyvista import PVDisplay
+from .plot.pyvista import PVDisplay,PVBackgroundDisplay
 from .dataset import SimulationDataset
 from .periodic import PeriodicCell
 from .bc import BoundaryCondition
@@ -64,7 +67,7 @@ class VersionError(Exception):
 class Simulation:
 
     def __init__(self, 
-                 modelname: str, 
+                 modelname: str,
                  loglevel: Literal['TRACE','DEBUG','INFO','WARNING','ERROR'] = 'INFO',
                  load_file: bool = False,
                  save_file: bool = False,
@@ -498,4 +501,74 @@ class Simulation:
         """
         logger.warning('define_geometry() will be derpicated. Use commit_geometry() instead.')
         self.commit_geometry(*args)
-        
+
+
+class SimulationQ(Simulation):
+    def __init__(self,
+                 modelname: str,
+                 plotter: pyvistaqt.BackgroundPlotter,
+                 loglevel: Literal['TRACE', 'DEBUG', 'INFO', 'WARNING', 'ERROR'] = 'INFO',
+                 load_file: bool = False,
+                 save_file: bool = False,
+                 logfile: bool = False,
+                 path_suffix: str = ".EMResults"):
+        """Generate a Simulation class object.
+
+        As a minimum a file name should be provided. Additionally you may provide it with any
+        class that inherits from BaseDisplay. This will then be used for geometry displaying.
+
+        Args:
+            modelname (str): The name of the simulation model. This will be used for filenames and path names when saving data.
+            loglevel ("DEBUG","INFO","WARNING","ERROR", optional): The loglevel to use for loguru. Defaults to 'INFO'.
+            load_file (bool, optional): If the simulatio model should be loaded from a file. Defaults to False.
+            save_file (bool, optional): if the simulation file should be stored to a file. Defaults to False.
+            logfile (bool, optional): If a file should be created that contains the entire log of the simulation. Defaults to False.
+            path_suffix (str, optional): The suffix that will be added to the results directory. Defaults to ".EMResults".
+        """
+
+        caller_file = Path(inspect.stack()[1].filename).resolve()
+        base_path = caller_file.parent
+
+        self.modelname = modelname
+        self.modelpath = base_path / (modelname.lower() + path_suffix)
+        self.mesher: Mesher = Mesher()
+        self.modeler: Modeler = Modeler()
+
+        self.mesh: Mesh3D = Mesh3D(self.mesher)
+        self.select: Selector = Selector()
+
+        ## STATES
+        self.__active: bool = False
+        self._defined_geometries: bool = False
+        self._cell: PeriodicCell | None = None
+
+        self.display: PVBackgroundDisplay = PVBackgroundDisplay(self.mesh, plotter)
+
+        self.save_file: bool = save_file
+        self.load_file: bool = load_file
+
+        self.data: SimulationDataset = SimulationDataset()
+
+        ## Physics
+        self.mw: Microwave3D = Microwave3D(self.mesher, self.data.mw)
+
+        self._initialize_simulation()
+
+        self.set_loglevel(loglevel)
+        if logfile:
+            self.set_logfile()
+
+        self._update_data()
+
+    def update_view(self):
+        gmsh.model.occ.synchronize()  # this is global
+        gmsh.model.mesh.generate(3)
+        self.mesh.update()
+        self.mesh.exterior_face_tags = self.mesher.domain_boundary_face_tags
+        gmsh.model.occ.synchronize()
+        self._set_mesh(self.mesh)
+
+        for geo in self.data.sim['geometries']:
+            # m.display is a PVDisplay object
+            # This is initialized with the Mesh3D object m.mesh
+            self.display.add_object(geo, opacity=0.5)
