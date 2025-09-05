@@ -955,16 +955,30 @@ class PCB:
                  material: Material = AIR,
                  trace_material: Material = PEC,
                  layers: int = 2,
-                 _stack: list[PCBLayer] = None,
-                 name: str | None = None
+                 stack: list[PCBLayer] = None,
+                 name: str | None = None,
+                 trace_thickness: float | None = None,
                  ):
+        """Creates a new PCB layout class instance
+
+        Args:
+            thickness (float): The total PCB thickness
+            unit (float, optional): The units used for all dimensions. Defaults to 0.001 (mm).
+            cs (CoordinateSystem | None, optional): The coordinate system to place the PCB in (XY). Defaults to None.
+            material (Material, optional): The dielectric material. Defaults to AIR.
+            trace_material (Material, optional): The trace material. Defaults to PEC.
+            layers (int, optional): The number of copper layers. Defaults to 2.
+            stack (list[PCBLayer], optional): Optional list of PCBLayer classes for multilayer PCB with different dielectrics. Defaults to None.
+            name (str | None, optional): The PCB object name. Defaults to None.
+            trace_thickness (float | None, optional): The conductor trace thickness if important. Defaults to None.
+        """
 
         self.thickness: float = thickness
         self._stack: list[PCBLayer] = []
         
-        if _stack is not None:
-            self._stack = _stack
-            ths = [ly.th for ly in _stack]
+        if stack is not None:
+            self._stack = stack
+            ths = [ly.th for ly in stack]
             zbot = -sum(ths)
             self._zs = np.concatenate([np.array([zbot,]), zbot + np.cumsum(np.array(ths))])
             self.thickness = sum(ths)
@@ -985,6 +999,7 @@ class PCB:
 
         self.lumped_ports: list[StripLine] = []
         self.lumped_elements: list[GeoPolygon] = []
+        self.trace_thickness: float | None = trace_thickness
 
         self.unit: float = unit
 
@@ -1183,6 +1198,7 @@ class PCB:
                                                         origin[2])
 
         plane = Plate(origin, (width*self.unit, 0, 0), (0, height*self.unit, 0), name=name) # type: ignore
+        plane._store('thickness', self.thickness)
         plane = change_coordinate_system(plane, self.cs) # type: ignore
         plane.set_material(self.trace_material)
         return plane # type: ignore
@@ -1423,6 +1439,7 @@ class PCB:
         tag_wire = gmsh.model.occ.addWire(ltags)
         planetag = gmsh.model.occ.addPlaneSurface([tag_wire,])
         poly = GeoPolygon([planetag,], name=name)
+        poly._store('thickness', self.thickness)
         return poly
     
     @overload
@@ -1489,14 +1506,4 @@ class PCB:
             polys = unite(*polys)
             
         return polys
-                
-############################################################
-#                        DEPRICATED                       #
-############################################################
 
-class PCBLayouter(PCB):
-
-    def __init__(self, *args, **kwargs):
-        logger.warning('PCBLayouter will be depricated. Use PCB instead.')
-        super().__init__(*args, **kwargs)
-        

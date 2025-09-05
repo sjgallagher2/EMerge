@@ -28,7 +28,7 @@ airbox_length = 6*cm                # airbox length
 airbox_width = 15*cm                # airbox width
 
 # --- Create simulation object -------------------------------------------
-model = em.Simulation('ConicalHornAntenna', loglevel='DEBUG')
+model = em.Simulation('ConicalHornAntenna')
 model.check_version("1.0.0") # Checks version compatibility
 
 # --- Feed geometry -------------------------------------------------------
@@ -86,8 +86,8 @@ ff_data = data.field[0].farfield_2d(
 plot_ff(ff_data.ang * 180/np.pi, ff_data.normE/em.lib.EISO, dB=True, ylabel='Gain [dBi]')
 
 # --- Visualization ------------------------------------------------------
-model.display.add_object(horn_vol, opacity=0.5)
-model.display.add_object(feed, opacity=0.5)
+model.display.add_object(horn_vol, opacity=0.1)
+model.display.add_object(feed, opacity=0.1)
 model.display.add_surf(
     *data.field[0].farfield_3d(radiation_boundary).surfplot(
         'normE', 'abs', True, True, -10, 5*cm, (waveguide_length+aperture_length,0,0)

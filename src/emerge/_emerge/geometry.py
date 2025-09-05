@@ -262,21 +262,59 @@ class GeoObject:
         self.give_name(name)
         _GEOMANAGER.submit_geometry(self)
 
-    def give_name(self, name: str | None = None):
+    def _store(self, name: str, data: Any) -> None:
+        """Store a property as auxilliary data under a given name
+
+        Args:
+            name (str): Name field
+            data (Any): Data to store
+        """
+        self._aux_data[name] = data
+
+    def _load(self, name: str) -> Any | None:
+        """Load data with a given name. If it doesn't exist, it returns None
+
+        Args:
+            name (str): The property to retreive
+
+        Returns:
+            Any | None: The property
+        """
+        return self._aux_data.get(name, None)
+    
+    def give_name(self, name: str | None = None) -> GeoObject:
+        """Assign a name to this object
+
+        Args:
+            name (str | None, optional): The name for the object. Defaults to None.
+        """
         if name is None:
             name = self._default_name
         self.name: str = _GEOMANAGER.get_name(name)
-        
+        return self
+    
     @property
     def color_rgb(self) -> tuple[float, float, float]:
+        """The color of the object in RGB float tuple
+
+        Returns:
+            tuple[float, float, float]: The color
+        """
         return self.material.color_rgb
     
     @property
     def opacity(self) -> float:
+        """The opacity of the object
+
+        Returns:
+            float: The opacity
+        """
         return self.material.opacity
     
     @property
     def _metal(self) -> bool:
+        """If the material should be rendered as metal
+        """
         return self.material._metal
     
     @property
@@ -293,6 +331,14 @@ class GeoObject:
     
     @staticmethod
     def merged(objects: list[GeoPoint | GeoEdge | GeoSurface | GeoVolume | GeoObject]) -> list[GeoPoint | GeoEdge | GeoSurface | GeoVolume | GeoObject] | GeoPoint | GeoEdge | GeoSurface | GeoVolume | GeoObject:
+        """Create a GeoObject by merging an iterable of GeoObjects
+
+        Args:
+            objects (list[GeoPoint  |  GeoEdge  |  GeoSurface  |  GeoVolume  |  GeoObject]): A list of geo objects
+
+        Returns:
+            GeoPoint | GeoEdge | GeoSurface | GeoVolume | GeoObject: The resultant object
+        """
         dim = objects[0].dim
         tags = []
         out: GeoObject | None = None
@@ -318,6 +364,17 @@ class GeoObject:
                           origin: np.ndarray | None = None,
                           normal: np.ndarray | None = None,
                           tag: int | None = None):
+        """Adds a face identifier (face pointer) to this object
+
+        Args:
+            name (str): The name for the face
+            origin (np.ndarray | None, optional): A point on the object. Defaults to None.
+            normal (np.ndarray | None, optional): The normal of the face. Defaults to None.
+            tag (int | None, optional): The tace tag used to extract the origin and normal. Defaults to None.
+
+        Raises:
+            ValueError: _description_
+        """
         if tag is not None:
             o = gmsh.model.occ.get_center_of_mass(2, tag)
             n = gmsh.model.get_normal(tag, (0,0))
@@ -329,6 +386,7 @@ class GeoObject:
         raise ValueError('Eitehr a tag or an origin + normal must be provided!')
     
     def make_copy(self) -> GeoObject:
+        """ Copies this object and returns a new object (also in GMSH)"""
         new_dimtags = gmsh.model.occ.copy(self.dimtags)
         new_obj = GeoObject.from_dimtags(new_dimtags)
         new_obj.material = self.material
@@ -346,6 +404,11 @@ class GeoObject:
         return new_obj
 
     def replace_tags(self, tagmap: dict[int, list[int]]):
+        """Replaces the GMSH tags assigned to this objects
+
+        Args:
+            tagmap (dict[int, list[int]]): A map that shows which tag is mapped to which set of new tags.
+        """
         self.old_tags = self.tags
         newtags = []
         for tag in self.tags:

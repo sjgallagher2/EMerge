@@ -309,34 +309,66 @@ class Simulation:
         logger.info('Different cached data detected, rerunning simulation.')
         return True
     
-    def check_version(self, version: str) -> None:
-        """Compares the provided version number with the version number of EMerge that is running the script.
-        
-        You may remove any call to check_version to suppress VersionErrors and warnings.
-        
-        Args:
-            version (str): The EMerge version you intend to write this code for.
-
-        Raises:
-            VersionError: A potential version error if incompatibility is possible
+    def check_version(self, target_version: str, *, log: bool = False) -> None:
         """
-        vM, vm, vp = [float(x) for x in version.split('.')]
-        cM, cm, cp = [float(x) for x in __version__.split('.')]
-        if vM != cM:
-            raise VersionError(f"You are running a script designed for version {version} with a possibly incompatible version of EMerge {__version__}. \n You can upgrade your version of emerge with: pip --upgrade emerge")
-        if vm != cm:
-            raise VersionError(f"You are running a script designed for version {version} with a possibly incompatible version of EMerge {__version__}. \n You can upgrade your version of emerge with: pip --upgrade emerge")
-        if vp != cp:
-            logger.warning("You are running a script designed for a different version of EMerge.")
-            logger.warning(f"The script version: {version}")
-            logger.warning(f"EMerge version:     {__version__}")
-            logger.warning("Usually EMerge works without a problem but Errors may occur.")
-            logger.warning("You can upgrade your version of emerge with: pip --upgrade emerge")
-            logger.warning("You may suppress this error by removing the call to .check_version().")
-            logger.warning("Press Ctrl+C to abort.")
-            ans = input('Press enter to proceed or [Q] to quit:')
-            if ans.lower().strip()=='q':
-                quit()
+        Ensure the script targets an EMerge version compatible with the current runtime.
+
+        Parameters
+        ----------
+        target_version : str
+            The EMerge version this script was written for (e.g. "1.4.0").
+        log : bool, optional
+            If True and a `logger` is available, emit a single WARNING with the same
+            message as the exception. Defaults to False.
+
+        Raises
+        ------
+        VersionError
+            If the script's target version differs from the running EMerge version.
+        """
+        try:
+            from packaging.version import Version as _V
+            v_script = _V(target_version)
+            v_runtime = _V(__version__)
+            newer = v_script > v_runtime
+            older = v_script < v_runtime
+        except Exception:
+            def _parse(v: str):
+                try:
+                    return tuple(int(p) for p in v.split("."))
+                except Exception:
+                    # Last-resort: compare as strings to avoid crashing the check itself
+                    return tuple(v.split("."))
+            v_script = _parse(target_version)
+            v_runtime = _parse(__version__)
+            newer = v_script > v_runtime
+            older = v_script < v_runtime
+
+        if not newer and not older:
+            return  # exact match
+
+        if newer:
+            msg = (
+                f"Script targets EMerge {target_version}, but runtime is {__version__}. "
+                "The script may rely on features added after your installed version. "
+                "Recommended: upgrade EMerge (`pip install --upgrade emerge`). "
+                "If you know the script is compatible, you may remove this check."
+            )
+        else:  # older
+            msg = (
+                f"Script targets EMerge {target_version}, but runtime is {__version__}. "
+                "APIs may have changed since the targeted version. "
+                "Recommended: update the script for the current EMerge, or run a matching older release. "
+                "If you know the script is compatible, you may remove this check."
+            )
+
+        if log:
+            try:
+                logger.warning(msg)
+            except Exception:
+                pass
+
+        raise VersionError(msg)
 
     def save(self) -> None:
         """Saves the current model in the provided project directory."""

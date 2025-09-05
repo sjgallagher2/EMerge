@@ -1002,6 +1002,7 @@ class SurfaceImpedance(RobinBC):
                  material: Material | None = None,
                  surface_conductance: float | None = None,
                  surface_roughness: float = 0,
+                 thickness: float | None = None,
                  sr_model: Literal['Hammerstad-Jensen'] = 'Hammerstad-Jensen',
                  ):
         """Generates a SurfaceImpedance bounary condition.
@@ -1021,7 +1022,8 @@ class SurfaceImpedance(RobinBC):
             material (Material | None, optional): The matrial to assign. Defaults to None.
             surface_conductance (float | None, optional): The specific bulk conductivity to use. Defaults to None.
             surface_roughness (float, optional): The surface roughness. Defaults to 0.
-            sr_model (Literal[&#39;Hammerstad, optional): The surface roughness model. Defaults to 'Hammerstad-Jensen'.
+            thickness (float | None, optional): The layer thickness. Defaults to None
+            sr_model (Literal["Hammerstad-Jensen", optional): The surface roughness model. Defaults to 'Hammerstad-Jensen'.
         """
         super().__init__(face)
 
@@ -1029,7 +1031,11 @@ class SurfaceImpedance(RobinBC):
         self._mur: float | complex = 1.0
         self._epsr: float | complex = 1.0
         self.sigma: float = 0.0
+        self.thickness: float | None = thickness
         
+        if isinstance(face, GeoObject) and thickness is None:
+            self.thickness = face._load('thickness')
+            
         if material is not None:
             self.sigma = material.cond.scalar(1e9)
             self._mur = material.ur
@@ -1067,10 +1073,17 @@ class SurfaceImpedance(RobinBC):
         sigma = self.sigma
         mur = self._material.ur.scalar(f0)
         er = self._material.er.scalar(f0)
-        
+        eps = EPS0*er
+        mu = MU0*mur
         rho = 1/sigma
-        d_skin = (2*rho/(w0*MU0*mur) * ((1+(w0*EPS0*er*rho)**2)**0.5 + rho*w0*EPS0*er))**0.5
-        R = rho/d_skin
+        d_skin = (2*rho/(w0*mu) * ((1+(w0*eps*rho)**2)**0.5 + rho*w0*eps))**0.5
+        logger.debug(f'Computed skin depth δ={d_skin*1e6:.2}μm')
+        R = (1+1j)*rho/d_skin
+        if self.thickness is not None:
+            eps_c = eps - 1j * sigma / w0
+            gamma_m = 1j * w0 * np.sqrt(mu*eps_c)
+            R = R / np.tanh(gamma_m * self.thickness)
+            logger.debug(f'Impedance scaler due to thickness: {1/ np.tanh(gamma_m * self.thickness) :.4f}')
         if self._sr_model=='Hammerstad-Jensen' and self._sr > 0.0:
             R = R * (1 + 2/np.pi * np.arctan(1.4*(self._sr/d_skin)**2))
         return 1j*k0*Z0/R
