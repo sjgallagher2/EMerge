@@ -1305,7 +1305,7 @@ class PCBNew:
         for x,y in xys:
             px, py, pz = self.cs.in_global_cs(x*self.unit, y*self.unit, z*self.unit)
             ptags.append(gmsh.model.occ.addPoint(px, py, pz))
-            #print(f'Tag={ptags[-1]} = {px:.7f},{py:.7f},{pz:.7f}')
+
         
         ltags = []
         for t1, t2 in zip(ptags[:-1], ptags[1:]):
