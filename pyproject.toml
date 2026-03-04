@@ -70,6 +70,8 @@ dev = [
     "pygerber",
     "ezdxf>=1.4.3",
     "psutil>=7.2.2",
+    "emerge-aasds",
+    "emerge-iron",
 ]
 
 [tool.uv]
@@ -91,6 +93,8 @@ publish-url = "https://test.pypi.org/legacy"
 
 [tool.uv.sources]
 emsutil = { path = "../emsutil", editable = true }
+emerge-aasds = { git = "https://github.com/FennisRobert/emerge-aasds" }
+emerge-iron = { git = "https://github.com/FennisRobert/EMerge-IRON" }
 
 [tool.pytest.ini_options]
 addopts = [
