@@ -15,6 +15,7 @@
 # along with this program; if not, see
 # <https://www.gnu.org/licenses/>.
 
+# Last Cleanup: 2026-03-04
 from loguru import logger
 import sys
 from typing import Literal, Generator
@@ -25,7 +26,7 @@ import platform
 import importlib
 import multiprocessing
 
-packages = ["numba", "numpy", "scipy", "gmsh", "joblib","matplotlib","pyvista","mkl","cloudpickle","scikit-umfpack","nvidia-cudss-cu12","nvmath-python[cu12]","cupy-cuda12x","ezdxf"]
+packages = ["numba", "numpy", "scipy", "gmsh", "joblib","matplotlib","pyvista","mkl","cloudpickle","scikit-umfpack","nvidia-cudss-cu12","nvmath-python[cu12]","cupy-cuda12x","ezdxf","emerge-aasds","emerge-iron","msgpack","msgpack-numpy","psutil"]
 
 def get_version(pkg_name):
     try:

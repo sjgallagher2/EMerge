@@ -15,6 +15,7 @@
 # along with this program; if not, see
 # <https://www.gnu.org/licenses/>.
 
+# Last Cleanup: 2026-03-04
 from .microwave_data import MWField
 import numpy as np
 from ...mth.optimized import matmul, outward_normal
@@ -314,7 +315,7 @@ def reduce_point_set(coords: np.ndarray, gr: float, dss: np.ndarray, scaler: flo
         if (N-counter)/N < keep_percentage:
             break
         
-        if (N-counter) <= 10:
+        if (N-counter) <= 20:
             break
         
         if current_min[i] <= impressed_size[i,i]*0.8:

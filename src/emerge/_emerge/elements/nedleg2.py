@@ -15,6 +15,7 @@
 # along with this program; if not, see
 # <https://www.gnu.org/licenses/>.
 
+# Last Cleanup: 2026-03-04
 from __future__ import annotations
 import numpy as np
 from ..mesh3d import SurfaceMesh
@@ -72,10 +73,10 @@ class FieldFunctionClass:
         return np.array([Fx, Fy, Fz])*self.constant
     
     def calcE(self, xs: np.ndarray, ys: np.ndarray, usenan: bool = False) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        from .ned2_interp import ned2_tri_interp_full
+        from ..compiled import MATHLIB
         
         coordinates = np.array([xs, ys])
-        vals = ned2_tri_interp_full(coordinates, 
+        vals = MATHLIB.ned2_tri_interp_full(coordinates, 
                                self.field, 
                                self.tris,  
                                self.nodes, 
@@ -85,10 +86,10 @@ class FieldFunctionClass:
         return vals
     
     def calcH(self, xs: np.ndarray, ys: np.ndarray, usenan: bool = False) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        from .ned2_interp import ned2_tri_interp_curl
+        from ..compiled import MATHLIB
         coordinates = np.array([xs, ys])
         
-        vals = ned2_tri_interp_curl(coordinates, 
+        vals = MATHLIB.ned2_tri_interp_curl(coordinates, 
                                self.field, 
                                self.tris,  
                                self.nodes, 

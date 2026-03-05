@@ -15,6 +15,7 @@
 # along with this program; if not, see
 # <https://www.gnu.org/licenses/>.
 
+# Last Cleanup: 2026-03-04
 import gmsh # type: ignore
 from .geometry import GeoVolume, GeoObject, GeoSurface
 from .selection import Selection, FaceSelection
@@ -24,7 +25,6 @@ from typing import Iterable, Callable, Any, TypeVar
 from loguru import logger
 from enum import Enum
 from .bc import Periodic, BoundaryCondition
-from scipy.spatial import cKDTree
 
 class MeshError(Exception):
     pass
@@ -77,8 +77,15 @@ class AMRPoints:
         self._amr_sizes: np.ndarray = None
         self._amr_ratios: np.ndrray = None
         self._amr_new: np.ndarray = None
-        self.kdtree: cKDTree | None = None
 
+    def reset(self):
+        self._amr_fields: list[int] = []
+        self._amr_coords: np.ndarray = None
+        self._amr_sizes: np.ndarray = None
+        self._amr_ratios: np.ndrray = None
+        self._amr_new: np.ndarray = None
+        self._reset_amr_points()
+        
     @property
     def npts(self) -> int:
         return self._amr_coords.shape[1]
@@ -125,22 +132,13 @@ class AMRPoints:
         A = newsize/gr
         B = (1-gr)/gr
         
-        if xs.shape[0] < 1000:
-            from numba import njit, i8, f8
-            @njit(f8(i8,i8,f8,f8,f8,f8), nogil=True, fastmath=True, parallel=False)
-            def func(dim, tag, x, y, z, lc):
-                sizes = np.maximum(newsize, A - B * _qf*np.sqrt((x-xs)**2 + (y-ys)**2 + (z-zs)**2))
-                return min(lc,  float(np.min(sizes)))
-        else:   
-            points = np.vstack((xs, ys, zs)).T
-            self.kdtree = cKDTree(points)
-            def func(dim, tag, x, y, z, lc):
-                query_point = np.array([x, y, z])
-                d, ids = self.kdtree.query(query_point, k=3)
-
-                nsize = np.maximum(newsize[ids], A[ids] - B * _qf* d)
-                return min(lc,  float(np.min(nsize)))
-            
+        
+        from numba import njit, i8, f8
+        @njit(f8(i8,i8,f8,f8,f8,f8), nogil=True, fastmath=True, parallel=False)
+        def func(dim, tag, x, y, z, lc):
+            sizes = np.maximum(newsize, A - B * _qf*np.sqrt((x-xs)**2 + (y-ys)**2 + (z-zs)**2))
+            return min(lc,  float(np.min(sizes)))
+        
         gmsh.model.mesh.setSizeCallback(func)
     
     def set_ratio(self, ratio: float) -> None:
