@@ -92,7 +92,7 @@ url = "https://test.pypi.org/simple"
 publish-url = "https://test.pypi.org/legacy"
 
 [tool.uv.sources]
-emsutil = { git = "https://github.com/FennisRobert/emsutil }
+emsutil = { git = "https://github.com/FennisRobert/emsutil" }
 #emerge-aasds = { git = "https://github.com/FennisRobert/emerge-aasds" }
 #emerge-iron = { git = "https://github.com/FennisRobert/EMerge-IRON" }
 
